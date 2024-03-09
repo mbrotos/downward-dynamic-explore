@@ -30,7 +30,6 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
 
             # Increment the progress counter
             ((COUNTER++))
-            
             # Run Fast Downward on the current problem
             echo "Processing problem $COUNTER of $NUM_PROBLEMS: $(basename -- $PROBLEM_FILE)"
 
