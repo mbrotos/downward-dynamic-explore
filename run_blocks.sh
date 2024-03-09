@@ -33,7 +33,13 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
             # Run Fast Downward on the current problem
             echo "Processing problem $COUNTER of $NUM_PROBLEMS: $(basename -- $PROBLEM_FILE)"
 
-            python3 fast-downward.py --overall-time-limit 5m $BENCHMARK_DIR/$DOMAIN_FILE $PROBLEM_FILE --evaluator "hff=ff()" --search "eager_greedy([hff], preferred=[hff])" > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
+            python3 fast-downward.py \
+                --overall-time-limit 5m \
+                $BENCHMARK_DIR/$DOMAIN_FILE $PROBLEM_FILE \
+                --evaluator "hff=ff()" \
+                --search "eager_greedy([hff], preferred=[hff])" \
+                > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
+
             mv sas_plan $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_sas_plan
         done
     fi
