@@ -42,6 +42,7 @@ headers = [
     "plan_length",
     "status",
     "exit_code",
+    "evaluations",
 ]
 
 
@@ -58,8 +59,9 @@ def extractStats(pddl_out_path, domain, problem, planner):
         length = to_int(re.search(r"Plan length: (\d+)", planner_log))
         exit_code = to_int(re.search(r"search exit code: (\d+)", planner_log))
         status = search_status[exit_code]
+        evaluations = to_int(re.search(r"Evaluations: (\d+)", planner_log))
 
-    return [domain, problem, planner, time, memory, cost, length, status, exit_code]
+    return [domain, problem, planner, time, memory, cost, length, status, exit_code, evaluations]
 
 
 def main():
