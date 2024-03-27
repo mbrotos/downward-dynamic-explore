@@ -3,5 +3,14 @@ __pycache__/
 /sas_plan
 /sas_plan.*
 /builds/
+/build/
+/planner_outputs/
 /misc/.tox/
 /misc/autodoc/downward-xmlrpc.secret
+/misc/tests/benchmarks/blocks
+.vscode/settings.json
+.vscode/launch.json
+/misc/tests/benchmarks
+*.zip
+*.ipynb
+*.csv
