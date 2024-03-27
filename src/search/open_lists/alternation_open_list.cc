@@ -67,8 +67,6 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min() {
     int best = -1;
     std::vector<int> non_empty_lists;
-    // print number of open lists and their names
-    cout << "Number of open lists: " << open_lists.size() << endl;
     for (std::size_t i = 0; i < open_lists.size(); ++i) {
         if (!open_lists[i]->empty()) {
             non_empty_lists.push_back(i);
