@@ -9,6 +9,7 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <random>
 
 using namespace std;
 using utils::ExitCode;
@@ -38,12 +39,13 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    std::mt19937 rng;
 };
 
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")) {
+    : boost_amount(opts.get<int>("boost")), rng(std::random_device{}()) {
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
@@ -62,18 +64,25 @@ void AlternationOpenList<Entry>::do_insertion(
 
 template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min() {
-    int best = -1;
-    for (size_t i = 0; i < open_lists.size(); ++i) {
-        if (!open_lists[i]->empty() &&
-            (best == -1 || priorities[i] < priorities[best])) {
-            best = i;
+    std::vector<int> non_empty_lists;
+    // print number of open lists and their names
+    cout << "Number of open lists: " << open_lists.size() << endl;
+    for (std::size_t i = 0; i < open_lists.size(); ++i) {
+        if (!open_lists[i]->empty()) {
+            non_empty_lists.push_back(i);
         }
     }
-    assert(best != -1);
-    const auto &best_list = open_lists[best];
-    assert(!best_list->empty());
-    ++priorities[best];
-    return best_list->remove_min();
+    assert(!non_empty_lists.empty()); // Ensure there's at least one non-empty list
+    
+    // Randomly select an index from non_empty_lists
+    std::uniform_int_distribution<> dist(0, non_empty_lists.size() - 1);
+    int random_index = non_empty_lists[dist(rng)];
+
+    // Print the index of the selected open list
+    cout << "Selected open list index: " << random_index << endl;
+
+    // Now proceed with the previously selected open list
+    return open_lists[random_index]->remove_min();
 }
 
 template<class Entry>

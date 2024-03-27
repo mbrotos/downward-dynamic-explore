@@ -36,11 +36,15 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
             python3 fast-downward.py \
                 --overall-time-limit 5m \
                 $BENCHMARK_DIR/$DOMAIN_FILE $PROBLEM_FILE \
-                --evaluator "hff=ff()" \
-                --search "eager_greedy([hff], preferred=[hff])" \
+                --evaluator "hff1=ff()" \
+                --evaluator "hff2=ff()" \
+                --evaluator "hcea=cea()" \
+                --search "eager(alt([single(hff1), single(hff2), single(hcea)], boost=0), preferred=[])"
                 > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
 
             mv sas_plan $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_sas_plan
+            # break
         done
     fi
+    # break
 done
