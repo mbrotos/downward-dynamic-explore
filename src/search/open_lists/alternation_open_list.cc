@@ -21,6 +21,7 @@ class AlternationOpenList : public OpenList<Entry> {
     vector<int> priorities;
 
     const int boost_amount;
+    const int decision;
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
@@ -45,7 +46,7 @@ public:
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")), rng(std::random_device{}()) {
+    : boost_amount(opts.get<int>("boost")), decision(opts.get<int>("decision")), rng(std::random_device{}()) {
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
@@ -64,25 +65,38 @@ void AlternationOpenList<Entry>::do_insertion(
 
 template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min() {
+    int best = -1;
     std::vector<int> non_empty_lists;
     // print number of open lists and their names
     cout << "Number of open lists: " << open_lists.size() << endl;
     for (std::size_t i = 0; i < open_lists.size(); ++i) {
         if (!open_lists[i]->empty()) {
             non_empty_lists.push_back(i);
+            if (best == -1 || priorities[i] < priorities[best]) {
+                best = i;
+            }
         }
     }
     assert(!non_empty_lists.empty()); // Ensure there's at least one non-empty list
-    
-    // Randomly select an index from non_empty_lists
-    std::uniform_int_distribution<> dist(0, non_empty_lists.size() - 1);
-    int random_index = non_empty_lists[dist(rng)];
+    int selected_index = -1;
 
-    // Print the index of the selected open list
-    cout << "Selected open list index: " << random_index << endl;
-
-    // Now proceed with the previously selected open list
-    return open_lists[random_index]->remove_min();
+    if (decision == 0) { // The default alternation strategy
+        assert(best != -1);
+        const auto &best_list = open_lists[best];
+        assert(!best_list->empty());
+        ++priorities[best];
+        return best_list->remove_min();
+        
+    } else if (decision == 1) { // Random alternation strategy
+        std::uniform_int_distribution<> dist(0, non_empty_lists.size() - 1);
+        selected_index = non_empty_lists[dist(rng)];
+        // cout << "Selected index: " << selected_index << endl;
+    }
+    else {
+        cout << "Invalid decision value" << endl;
+        utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    return open_lists[selected_index]->remove_min();
 }
 
 template<class Entry>
@@ -164,6 +178,10 @@ public:
             "boost",
             "boost value for contained open lists that are restricted "
             "to preferred successors",
+            "0");
+        add_option<int>(
+            "decision",
+            "decision value for alternating between open lists",
             "0");
     }
 
