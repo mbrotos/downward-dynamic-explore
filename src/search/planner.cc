@@ -7,6 +7,7 @@
 #include "utils/system.h"
 #include "utils/timer.h"
 
+#include <fstream>
 #include <iostream>
 
 using namespace std;
@@ -23,8 +24,11 @@ int main(int argc, const char **argv) {
     bool unit_cost = false;
     if (static_cast<string>(argv[1]) != "--help") {
         utils::g_log << "reading input..." << endl;
-        tasks::read_root_task(cin);
+        string file_path = "/mnt/c/Users/Adam/Documents/Github/downward-dynamic-explore/output.sas";
+        ifstream file_stream(file_path);
+        tasks::read_root_task(file_stream);
         utils::g_log << "done reading input!" << endl;
+        file_stream.close();
         TaskProxy task_proxy(*tasks::g_root_task);
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }

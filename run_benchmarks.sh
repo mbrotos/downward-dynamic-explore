@@ -43,8 +43,8 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
                 > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
 
             mv sas_plan $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_sas_plan
-            # break
+            break
         done
     fi
-    # break
+    break
 done
