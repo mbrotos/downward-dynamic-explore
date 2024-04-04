@@ -1,3 +1,20 @@
+### A fork of Fast Downward expanding on the alternation list and examining the impact of exploration in Type-GBFS and Type-WA*
+New features:
+- Custom alternation list decision functions
+- New alternation list option to toggle between decision functions
+- Random and weighted-random alternations
+- New alternation list option to define a probability distribution across open lists
+- [WIP] Search progress-based alternation decision function examining uninformative heuristic regions (UHRs):
+  - Rate of change of f-values
+  - Distribution of heuristic value in open list
+  - Number of nodes expanded and generated
+  - Number of dead ends
+  - etc.
+
+
+---
+
+---
 <img src="misc/images/fast-downward.svg" width="800" alt="Fast Downward">
 
 Fast Downward is a domain-independent classical planning system.
