@@ -40,7 +40,7 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
                 --evaluator "hg=g()" \
                 --search "eager(alt([epsilon_greedy(hff1, pref_only=false, epsilon=0.2, random_seed=-1), "\
                     "type_based([hff1,hg], random_seed=-1)], "\
-                    "boost=0, decision=1), preferred=[])" 
+                    "boost=0, decision=1, seed=42, probs=[0.2, 0.8]), preferred=[])" 
                 # Equivalent to eager_greedy. See: https://www.fast-downward.org/Doc/SearchAlgorithm#Equivalent_statements_using_general_eager_search-1
                 > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
 

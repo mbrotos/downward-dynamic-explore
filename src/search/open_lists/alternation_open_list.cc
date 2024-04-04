@@ -223,10 +223,19 @@ public:
         plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
         if (options.get<int>("decision") == 2) {
             plugins::verify_list_non_empty<float>(context, options, "probs");
+            const vector<float> probs = options.get_list<float>("probs").size();
             const int probs_len = options.get_list<float>("probs").size();
             const int sublists_len = options.get_list<shared_ptr<OpenListFactory>>("sublists").size();
             if (probs_len != sublists_len) {
                 cout << "Invalid probabilities size" << endl;
+                utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+            }
+            float sum = 0.0;
+            for (int i = 0; i < probs_len; ++i) {
+                sum += probs[i];
+            }
+            if (sum != 1.0) {
+                cout << "Invalid probabilities sum" << endl;
                 utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
             }
         }
