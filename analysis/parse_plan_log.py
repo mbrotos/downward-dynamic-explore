@@ -5,7 +5,7 @@ import argparse
 
 arg_parser = argparse.ArgumentParser(description="Parse plan log files")
 arg_parser.add_argument("--log_dir", help="Directory containing plan log files")
-arg_parser.add_argument("--output_dir", help="Directory to save parsed data")
+arg_parser.add_argument("--output_path", help="Directory to save parsed data")
 
 # See: https://www.fast-downward.org/ExitCodes
 search_status = {
@@ -69,7 +69,8 @@ def main():
     plan_out_path = os.path.abspath(args.log_dir)
     data = []
     planner = ""
-    with open(plan_out_path + "/run_benchmarks.sh", "r") as f:
+    folder_name = os.path.basename(os.path.dirname(args.output_path))
+    with open(os.path.dirname(args.output_path) + f"/run_benchmarks_{folder_name}.sh", "r") as f:
         planner = re.search(r'--search "(.*)"', f.read()).group(1)
 
     for folder in os.listdir(plan_out_path):
@@ -82,8 +83,8 @@ def main():
                 data.append(stats)
 
     df = pd.DataFrame(data, columns=headers)
-    df.to_csv(args.output_dir + "/parsed_plan_log.csv", index=False)
-    print("Parsed plan log saved to:", args.output_dir + "/parsed_plan_log.csv")
+    df.to_csv(args.output_path, index=False)
+    print("Parsed plan log saved to:", args.output_path)
     print(df.info())
 
 
