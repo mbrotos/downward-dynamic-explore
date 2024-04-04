@@ -37,9 +37,11 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
                 --overall-time-limit 5m \
                 $BENCHMARK_DIR/$DOMAIN_FILE $PROBLEM_FILE \
                 --evaluator "hff1=ff()" \
-                --evaluator "hff2=ff()" \
-                --evaluator "hcea=cea()" \
-                --search "eager(alt([single(hff1), single(hff2), single(hcea)], boost=0, decision=1), preferred=[])" # Equivalent to eager_greedy. See: https://www.fast-downward.org/Doc/SearchAlgorithm#Equivalent_statements_using_general_eager_search-1
+                --evaluator "hg=g()" \
+                --search "eager(alt([epsilon_greedy(hff1, pref_only=false, epsilon=0.2, random_seed=-1), "\
+                    "type_based([hff1,hg], random_seed=-1)], "\
+                    "boost=0, decision=1), preferred=[])" 
+                # Equivalent to eager_greedy. See: https://www.fast-downward.org/Doc/SearchAlgorithm#Equivalent_statements_using_general_eager_search-1
                 > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
 
             mv sas_plan $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_sas_plan
