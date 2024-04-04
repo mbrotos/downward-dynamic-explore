@@ -46,7 +46,7 @@ public:
     explicit ParetoOpenList(const plugins::Options &opts);
     virtual ~ParetoOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -154,7 +154,7 @@ void ParetoOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry ParetoOpenList<Entry>::remove_min() {
+Entry ParetoOpenList<Entry>::remove_min(StateRegistry* registry) {
     typename KeySet::iterator selected = nondominated.begin();
     int seen = 0;
     for (typename KeySet::iterator it = nondominated.begin();

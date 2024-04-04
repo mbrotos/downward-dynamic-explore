@@ -5,6 +5,7 @@
 #include "../plugins/plugin.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
+#include "../state_registry.h"
 
 #include <cassert>
 #include <memory>
@@ -32,7 +33,7 @@ public:
     explicit AlternationOpenList(const plugins::Options &opts);
     virtual ~AlternationOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
@@ -68,7 +69,7 @@ void AlternationOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry AlternationOpenList<Entry>::remove_min() {
+Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry) {
     int best = -1;
     std::vector<int> non_empty_lists;
     vector<double> non_empty_probs;
@@ -126,6 +127,19 @@ Entry AlternationOpenList<Entry>::remove_min() {
     else {
         cout << "Invalid decision value" << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+    if(registry != nullptr) {
+        auto id = open_lists[selected_index]->remove_min();
+        
+        if constexpr(is_same_v<Entry, StateID>) {
+            State s = (*registry).lookup_state(id);
+            cout << "ID: " << s.get_id() << "\n";
+        }
+        else {
+            State s = (*registry).lookup_state(id.first);
+            cout << "ID2: " << s.get_id() << "\n";
+        }
+        return id;
     }
     return open_lists[selected_index]->remove_min();
 }

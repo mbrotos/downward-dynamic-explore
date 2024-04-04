@@ -6,6 +6,7 @@
 #include "../plugins/plugin.h"
 #include "../utils/memory.h"
 
+
 #include <cassert>
 #include <deque>
 #include <map>
@@ -31,7 +32,7 @@ public:
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~BestFirstOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -66,7 +67,7 @@ void BestFirstOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry BestFirstOpenList<Entry>::remove_min() {
+Entry BestFirstOpenList<Entry>::remove_min(StateRegistry* registry) {
     assert(size > 0);
     auto it = buckets.begin();
     assert(it != buckets.end());

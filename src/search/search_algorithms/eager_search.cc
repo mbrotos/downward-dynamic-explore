@@ -114,7 +114,8 @@ SearchStatus EagerSearch::step() {
             log << "Completely explored state space -- no solution!" << endl;
             return FAILED;
         }
-        StateID id = open_list->remove_min();
+        StateRegistry *r = &state_registry;
+        StateID id = open_list->remove_min(r);
         State s = state_registry.lookup_state(id);
         node.emplace(search_space.get_node(s));
 

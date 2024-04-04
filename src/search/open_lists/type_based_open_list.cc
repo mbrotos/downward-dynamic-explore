@@ -36,7 +36,7 @@ public:
     explicit TypeBasedOpenList(const plugins::Options &opts);
     virtual ~TypeBasedOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
@@ -73,7 +73,7 @@ TypeBasedOpenList<Entry>::TypeBasedOpenList(const plugins::Options &opts)
 }
 
 template<class Entry>
-Entry TypeBasedOpenList<Entry>::remove_min() {
+Entry TypeBasedOpenList<Entry>::remove_min(StateRegistry* registry) {
     size_t bucket_id = rng->random(keys_and_buckets.size());
     auto &key_and_bucket = keys_and_buckets[bucket_id];
     const Key &min_key = key_and_bucket.first;
