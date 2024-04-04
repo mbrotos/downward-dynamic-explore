@@ -22,7 +22,8 @@ class AlternationOpenList : public OpenList<Entry> {
 
     const int boost_amount;
     const int decision;
-    const vector<float> probs;
+    const vector<double> probs;
+    std::mt19937 rng;
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
@@ -41,7 +42,6 @@ public:
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    std::mt19937 rng;
 };
 
 
@@ -50,7 +50,7 @@ AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
     : boost_amount(opts.get<int>("boost")), 
     decision(opts.get<int>("decision")), 
     rng(opts.get<int>("seed")), // std::random_device{}()
-    probs(opts.get_list<float>("probs")) { 
+    probs(opts.get_list<double>("probs")) { 
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
@@ -71,8 +71,8 @@ template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min() {
     int best = -1;
     std::vector<int> non_empty_lists;
-    vector<float> non_empty_probs;
-    vector<float> empty_probs;
+    vector<double> non_empty_probs;
+    vector<double> empty_probs;
     for (std::size_t i = 0; i < open_lists.size(); ++i) {
         if (!open_lists[i]->empty()) {
             non_empty_lists.push_back(i);
@@ -117,6 +117,11 @@ Entry AlternationOpenList<Entry>::remove_min() {
         std::discrete_distribution<> dist(non_empty_probs.begin(), non_empty_probs.end());
         selected_index = non_empty_lists[dist(rng)];
         // cout << "Selected index: " << selected_index << endl;
+        // // print the probabilities
+        // cout << "Probabilities: ";
+        // for (std::size_t i = 0; i < non_empty_probs.size(); ++i) {
+        //     cout << non_empty_probs[i] << " ";
+        // }
     }
     else {
         cout << "Invalid decision value" << endl;
@@ -213,7 +218,7 @@ public:
             "seed",
             "seed value for random number generator",
             "42");
-        add_option<vector<float>>(
+        add_list_option<double>(
             "probs",
             "probabilities for selecting each open list",
             "[]");
@@ -222,15 +227,15 @@ public:
     virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
         if (options.get<int>("decision") == 2) {
-            plugins::verify_list_non_empty<float>(context, options, "probs");
-            const vector<float> probs = options.get_list<float>("probs").size();
-            const int probs_len = options.get_list<float>("probs").size();
+            plugins::verify_list_non_empty<double>(context, options, "probs");
+            const vector<double> probs = options.get_list<double>("probs");
+            const int probs_len = probs.size();
             const int sublists_len = options.get_list<shared_ptr<OpenListFactory>>("sublists").size();
             if (probs_len != sublists_len) {
                 cout << "Invalid probabilities size" << endl;
                 utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
             }
-            float sum = 0.0;
+            double sum = 0.0;
             for (int i = 0; i < probs_len; ++i) {
                 sum += probs[i];
             }
