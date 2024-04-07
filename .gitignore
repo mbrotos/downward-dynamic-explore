@@ -14,3 +14,4 @@ __pycache__/
 *.zip
 *.ipynb
 *.csv
+analysis/planner_outputs/
