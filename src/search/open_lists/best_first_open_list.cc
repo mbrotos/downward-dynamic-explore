@@ -32,7 +32,7 @@ public:
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~BestFirstOpenList() override = default;
 
-    virtual Entry remove_min(StateRegistry* registry = nullptr) override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr, double last_f=-1, double last_g=-1) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -67,7 +67,7 @@ void BestFirstOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry BestFirstOpenList<Entry>::remove_min(StateRegistry* registry) {
+Entry BestFirstOpenList<Entry>::remove_min(StateRegistry* registry, double last_f, double last_g) {
     assert(size > 0);
     auto it = buckets.begin();
     assert(it != buckets.end());
