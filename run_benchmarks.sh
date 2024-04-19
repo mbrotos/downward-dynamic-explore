@@ -39,7 +39,7 @@ for BENCHMARK_DIR in $BENCHMARKS_ROOT_DIR/*; do
                 $BENCHMARK_DIR/$DOMAIN_FILE $PROBLEM_FILE \
                 --evaluator "hff1=ff()" \
                 --evaluator "hg=g()" \
-                --search "eager(alt([epsilon_greedy(hff1, pref_only=false, epsilon=0.2, random_seed=-1), type_based([hff1,hg], random_seed=-1)], boost=0, decision=2, seed=42, probs=[0.2, 0.8]), preferred=[])" \
+                --search "eager(alt([epsilon_greedy(hff1, pref_only=false, epsilon=1.0, random_seed=-1), type_based([hff1,hg], random_seed=-1)], boost=0, decision=2, seed=42, probs=[0.2, 0.8]), preferred=[])" \
                 > $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_out
 
             mv sas_plan $OUTPUT_DIR/$(basename -- $PROBLEM_FILE)_sas_plan
