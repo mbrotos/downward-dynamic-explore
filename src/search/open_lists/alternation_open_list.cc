@@ -58,10 +58,10 @@ public:
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")), 
-    decision(opts.get<int>("decision")), 
+    : boost_amount(opts.get<int>("boost")),
+    decision(opts.get<int>("decision")),
     rng(opts.get<int>("seed")), // std::random_device{}()
-    probs(opts.get_list<double>("probs")) { 
+    probs(opts.get_list<double>("probs")) {
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
@@ -119,7 +119,7 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
 
         double cur_min_prob = probs[0];
         for(int i = 1;i < open_lists.size();i++) {
-            if(probs[i] < cur_min_prob) 
+            if(probs[i] < cur_min_prob)
                 cur_min_prob = probs[i];
         }
 
@@ -159,7 +159,7 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
         }
     }
 
-    
+
 
 
     if (decision == 2) {
@@ -182,7 +182,7 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
         last_list = best;
 
         return best_list->remove_min();
-        
+
     } else if (decision == 1) { // Random alternation strategy
         std::uniform_int_distribution<> dist(0, non_empty_lists.size() - 1);
         selected_index = non_empty_lists[dist(rng)];
@@ -211,7 +211,7 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
 
     if(registry != nullptr) {
         auto id = open_lists[selected_index]->remove_min();
-        
+
         if constexpr(is_same_v<Entry, StateID>) {
             State s = (*registry).lookup_state(id);
             // cout << "ID: " << s.get_id() << " F: " << last_f << " G: " << last_g << "\n";
