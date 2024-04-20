@@ -27,14 +27,14 @@ class AlternationOpenList : public OpenList<Entry> {
     vector<double> probs;
     std::mt19937 rng;
 
-    vector<deque<int>> past_g;
-    vector<deque<int>> past_f;
+    vector<deque<double>> past_g;
+    vector<deque<double>> past_f;
 
     int last_list;
     int max_hist_size = 10;
     double learning_rate = 0.01;
-    double max_prob = 0.8;
-    double min_prob = 0.2;
+    double max_prob = 0.95;
+    double min_prob = 0.05;
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
@@ -132,8 +132,8 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
                 }
             }
 
-            // cout << "g1: " << avg_gs[0] << " g2: " << avg_gs[1] << "\n";
-            // cout << "p1: " << probs[0] << " p2: " << probs[1] << "\n";
+            cout << "g1: " << avg_gs[0] << " g2: " << avg_gs[1] << "\n";
+            cout << "p1: " << probs[0] << " p2: " << probs[1] << "\n";
         }
         else {
             // cout << "Skipped due to prob limits\n";
