@@ -27,11 +27,11 @@ class AlternationOpenList : public OpenList<Entry> {
     vector<double> probs;
     std::mt19937 rng;
 
-    vector<deque<double>> past_g;
-    vector<deque<double>> past_f;
+    vector<deque<int>> past_g;
+    vector<deque<int>> past_f;
 
-    double last_list;
-    double max_hist_size = 10;
+    int last_list;
+    int max_hist_size = 10;
     double learning_rate = 0.01;
     double max_prob = 0.8;
     double min_prob = 0.2;
@@ -95,7 +95,7 @@ Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double las
         past_g[last_list].push_back(last_g);
         past_f[last_list].push_back(last_f);
 
-        if(past_g.size() > max_hist_size) {
+        if(past_g[last_list].size() > max_hist_size) {
             past_g[last_list].pop_front();
             past_f[last_list].pop_front();
         }
