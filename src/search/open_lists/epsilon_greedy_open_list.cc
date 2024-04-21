@@ -48,7 +48,7 @@ public:
     explicit EpsilonGreedyOpenList(const plugins::Options &opts);
     virtual ~EpsilonGreedyOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr, double last_f=-1, double last_g=-1) override;
     virtual bool is_dead_end(
         EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
@@ -91,7 +91,7 @@ EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const plugins::Options &opts
 }
 
 template<class Entry>
-Entry EpsilonGreedyOpenList<Entry>::remove_min() {
+Entry EpsilonGreedyOpenList<Entry>::remove_min(StateRegistry* registry, double last_f, double last_g) {
     assert(size > 0);
     if (rng->random() < epsilon) {
         int pos = rng->random(size);

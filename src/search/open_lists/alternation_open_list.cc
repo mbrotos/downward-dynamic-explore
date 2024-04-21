@@ -5,10 +5,12 @@
 #include "../plugins/plugin.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
+#include "../state_registry.h"
 
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <deque>
 #include <random>
 
 using namespace std;
@@ -22,8 +24,17 @@ class AlternationOpenList : public OpenList<Entry> {
 
     const int boost_amount;
     const int decision;
-    const vector<double> probs;
+    vector<double> probs;
     std::mt19937 rng;
+
+    vector<deque<double>> past_g;
+    vector<deque<double>> past_f;
+
+    int last_list;
+    int max_hist_size = 10;
+    double learning_rate = 0.01;
+    double max_prob = 0.95;
+    double min_prob = 0.05;
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
                               const Entry &entry) override;
@@ -32,7 +43,7 @@ public:
     explicit AlternationOpenList(const plugins::Options &opts);
     virtual ~AlternationOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr, double last_f=-1, double last_g=-1) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void boost_preferred() override;
@@ -47,10 +58,10 @@ public:
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")), 
-    decision(opts.get<int>("decision")), 
+    : boost_amount(opts.get<int>("boost")),
+    decision(opts.get<int>("decision")),
     rng(opts.get<int>("seed")), // std::random_device{}()
-    probs(opts.get_list<double>("probs")) { 
+    probs(opts.get_list<double>("probs")) {
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     open_lists.reserve(open_list_factories.size());
@@ -58,6 +69,15 @@ AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
         open_lists.push_back(factory->create_open_list<Entry>());
 
     priorities.resize(open_lists.size(), 0);
+
+    // for(int i = 0;i < open_lists.size();i++) {
+    //     past_g.push_back(deque<double>(0));
+    //     past_f.push_back(deque<double>(0));
+    // }
+    past_g.resize(open_lists.size());
+    past_f.resize(open_lists.size());
+
+    last_list = -1;
 }
 
 template<class Entry>
@@ -68,7 +88,59 @@ void AlternationOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry AlternationOpenList<Entry>::remove_min() {
+Entry AlternationOpenList<Entry>::remove_min(StateRegistry* registry, double last_f, double last_g) {
+
+
+    if(last_list != -1 && last_g != -1) {
+        past_g[last_list].push_back(last_g);
+        past_f[last_list].push_back(last_f);
+
+        if(past_g[last_list].size() > max_hist_size) {
+            past_g[last_list].pop_front();
+            past_f[last_list].pop_front();
+        }
+
+        vector<double> avg_gs(open_lists.size());
+        for(int i = 0;i < open_lists.size();i++) {
+            for(int j = 0;j < past_g[i].size();j++) {
+                avg_gs[i] += past_g[i][j];
+            }
+            avg_gs[i] /= past_g[i].size();
+        }
+
+        int best_list = 0;
+        double best_val = avg_gs[0];
+        for(int i = 1;i < open_lists.size();i++) {
+            if(avg_gs[i] > best_val) {
+                best_val = avg_gs[i];
+                best_list = i;
+            }
+        }
+
+        double cur_min_prob = probs[0];
+        for(int i = 1;i < open_lists.size();i++) {
+            if(probs[i] < cur_min_prob)
+                cur_min_prob = probs[i];
+        }
+
+        if(cur_min_prob - learning_rate >= min_prob || probs[best_list] + learning_rate <= max_prob) {
+            for(int i = 0;i < open_lists.size();i++) {
+                if(i == best_list)
+                    probs[i] += learning_rate;
+                else {
+                    probs[i] -= (learning_rate / (open_lists.size()-1));
+                }
+            }
+
+            cout << "g1: " << avg_gs[0] << " g2: " << avg_gs[1] << "\n";
+            cout << "p1: " << probs[0] << " p2: " << probs[1] << "\n";
+        }
+        else {
+            // cout << "Skipped due to prob limits\n";
+        }
+
+    }
+
     int best = -1;
     std::vector<int> non_empty_lists;
     vector<double> non_empty_probs;
@@ -86,6 +158,10 @@ Entry AlternationOpenList<Entry>::remove_min() {
             empty_probs.push_back(probs[i]);
         }
     }
+
+
+
+
     if (decision == 2) {
         for (std::size_t i = 0; i < empty_probs.size(); ++i) {
             // equally distribute the probabilities of empty open lists to non-empty ones
@@ -102,8 +178,11 @@ Entry AlternationOpenList<Entry>::remove_min() {
         const auto &best_list = open_lists[best];
         assert(!best_list->empty());
         ++priorities[best];
+
+        last_list = best;
+
         return best_list->remove_min();
-        
+
     } else if (decision == 1) { // Random alternation strategy
         std::uniform_int_distribution<> dist(0, non_empty_lists.size() - 1);
         selected_index = non_empty_lists[dist(rng)];
@@ -126,6 +205,22 @@ Entry AlternationOpenList<Entry>::remove_min() {
     else {
         cout << "Invalid decision value" << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+
+    last_list = selected_index;
+
+    if(registry != nullptr) {
+        auto id = open_lists[selected_index]->remove_min();
+
+        if constexpr(is_same_v<Entry, StateID>) {
+            State s = (*registry).lookup_state(id);
+            // cout << "ID: " << s.get_id() << " F: " << last_f << " G: " << last_g << "\n";
+        }
+        else {
+            State s = (*registry).lookup_state(id.first);
+            // cout << "ID2: " << s.get_id() << "\n";
+        }
+        return id;
     }
     return open_lists[selected_index]->remove_min();
 }

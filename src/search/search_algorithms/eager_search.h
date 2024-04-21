@@ -27,6 +27,9 @@ class EagerSearch : public SearchAlgorithm {
 
     std::shared_ptr<PruningMethod> pruning_method;
 
+    double last_g, last_f;
+    bool alt_updatable;
+
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
     void reward_progress();
