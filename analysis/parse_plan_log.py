@@ -6,6 +6,7 @@ import argparse
 arg_parser = argparse.ArgumentParser(description="Parse plan log files")
 arg_parser.add_argument("--log_dir", help="Directory containing plan log files")
 arg_parser.add_argument("--output_path", help="Directory to save parsed data")
+arg_parser.add_argument("--planner", help="Planner used to generate the plan log files")
 
 # See: https://www.fast-downward.org/ExitCodes
 search_status = {
@@ -68,11 +69,7 @@ def main():
     args = arg_parser.parse_args()
     plan_out_path = os.path.abspath(args.log_dir)
     data = []
-    planner = ""
-    folder_name = os.path.basename(os.path.dirname(args.output_path))
-    with open(os.path.dirname(args.output_path) + f"/run_benchmarks_{folder_name}.sh", "r") as f:
-        planner = re.search(r'--search "(.*)"', f.read()).group(1)
-
+    planner = args.planner
     for folder in os.listdir(plan_out_path):
         if not os.path.isdir(os.path.join(plan_out_path, folder)):
             continue
