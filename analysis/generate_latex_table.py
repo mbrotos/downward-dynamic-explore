@@ -4,7 +4,7 @@ import pandas as pd
 # %%
 df_baseline = pd.read_csv('planner_outputs_baseline.csv')
 df_default = pd.read_csv('planner_outputs_first/default/planner_outputs_default.csv')
-df_fullrand = pd.read_csv('planner_outputs_first/fullrand/planner_outputs_fullrand.csv')
+df_fullrand = pd.read_csv('planner_outputs_random.csv')
 df_weighted = pd.read_csv('planner_outputs_stateinfo.csv')
 
 # %%
@@ -36,9 +36,27 @@ aggregate_baseline = aggregate_metrics(df_baseline)
 
 # Merge the aggregated metrics into a single DataFrame
 # This involves some complex merging and renaming to prepare for the LaTeX table
-merged_df = aggregated_default.merge(
-    aggregated_fullrand, on="domain", suffixes=("_default", "_fullrand")
+aggregated_default.rename(
+    columns={
+        "total_solved": "total_solved_default",
+        "avg_evaluations": "avg_evaluations_default",
+        "avg_plan_length": "avg_plan_length_default",
+        "avg_plan_cost": "avg_plan_cost_default",
+    },
+    inplace=True,
 )
+
+merged_df = aggregated_default.merge(aggregated_fullrand, on="domain")
+merged_df.rename(
+    columns={
+        "total_solved": "total_solved_fullrand",
+        "avg_evaluations": "avg_evaluations_fullrand",
+        "avg_plan_length": "avg_plan_length_fullrand",
+        "avg_plan_cost": "avg_plan_cost_fullrand",
+    },
+    inplace=True,
+)
+
 merged_df = merged_df.merge(aggregated_weighted, on="domain")
 merged_df.rename(
     columns={
@@ -137,7 +155,6 @@ highlighted_df.head()
 # %%
 # Function to generate LaTeX table from the DataFrame
 def generate_latex_table(df):
-
     # Generate mapping of domain names to ints, make sure its sorted
     domain_mapping = {domain: str(i) if not domain=='Total' else 'Total' for i, domain in enumerate(df["domain"].unique())}
     domain_num_mapping = {'recharging-robots-opt23-adl': 20,
@@ -181,8 +198,7 @@ def generate_latex_table(df):
     caption = ("Number of problems solved by each strategy for each domain. "
                 "The table lists the number of problems solved by each strategy for each domain, "
                 "as well as the total number of problems solved by each strategy.")
-    latex_str = df.to_latex(index=False, column_format='lrrrrrrrrrrrr', escape=False,
-                            columns=['domain', 'total_solved_baseline', 'total_solved_default', 'total_solved_fullrand', 'total_solved_weighted'],
+    latex_str = df[['domain', 'total_solved_baseline', 'total_solved_default', 'total_solved_fullrand', 'total_solved_weighted']].to_latex(index=False, column_format='lrrrr', escape=False,
                             header=['Domain', 'Baseline', 'Default', 'Random', 'W-Random'],
                             caption=caption, label='tab:solved_table')
     
@@ -194,7 +210,7 @@ def generate_latex_table(df):
 
     # Adding multicolumn labels for strategies
     strategy_labels = "\\hline\n\\multicolumn{1}{|c|}{} & \\multicolumn{4}{|c|}{Solved}\\\\ \\cline{2-5}\n"
-    latex_str = latex_str.replace("\\begin{tabular}{lrrrrrrrrrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
+    latex_str = latex_str.replace("\\begin{tabular}{lrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
     
     with open('solved_table.tex', 'w') as f:
         f.write(latex_str)
@@ -203,8 +219,7 @@ def generate_latex_table(df):
     caption = ("Number of evaluations by each strategy for each domain. "
                 "The table lists the average number of evaluations by each strategy for each domain, "
                 "as well as the total average number of evaluations by each strategy.")
-    latex_str = df.to_latex(index=False, column_format='lrrrrrrrrrrrr', escape=False,
-                            columns=['domain', 'avg_evaluations_baseline', 'avg_evaluations_default', 'avg_evaluations_fullrand', 'avg_evaluations_weighted'],
+    latex_str = df[['domain', 'avg_evaluations_baseline', 'avg_evaluations_default', 'avg_evaluations_fullrand', 'avg_evaluations_weighted']].to_latex(index=False, column_format='lrrrr', escape=False,
                             header=['Domain', 'Baseline', 'Default', 'Random', 'W-Random'],
                             caption=caption, label='tab:evaluations_table')
     
@@ -216,17 +231,15 @@ def generate_latex_table(df):
 
     # Adding multicolumn labels for strategies
     strategy_labels = "\\hline\n\\multicolumn{1}{|c|}{} & \\multicolumn{4}{|c|}{Evaluations}\\\\ \\cline{2-5}\n"
-    latex_str = latex_str.replace("\\begin{tabular}{lrrrrrrrrrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
+    latex_str = latex_str.replace("\\begin{tabular}{lrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
 
     with open('evaluations_table.tex', 'w') as f:
         f.write(latex_str)
-
     # Latex table for plan length by each strategy
     caption = ("Average plan length by each strategy for each domain. "
                 "The table lists the average plan length by each strategy for each domain, "
                 "as well as the total average plan length by each strategy.")
-    latex_str = df.to_latex(index=False, column_format='lrrrrrrrrrrrr', escape=False,
-                            columns=['domain', 'avg_plan_length_baseline', 'avg_plan_length_default', 'avg_plan_length_fullrand', 'avg_plan_length_weighted'],
+    latex_str = df[['domain', 'avg_plan_length_baseline', 'avg_plan_length_default', 'avg_plan_length_fullrand', 'avg_plan_length_weighted']].to_latex(index=False, column_format='lrrrr', escape=False,
                             header=['Domain', 'Baseline', 'Default', 'Random', 'W-Random'],
                             caption=caption, label='tab:plan_length_table')
     
@@ -238,7 +251,7 @@ def generate_latex_table(df):
 
     # Adding multicolumn labels for strategies
     strategy_labels = "\\hline\n\\multicolumn{1}{|c|}{} & \\multicolumn{4}{|c|}{Plan Length}\\\\ \\cline{2-5}\n"
-    latex_str = latex_str.replace("\\begin{tabular}{lrrrrrrrrrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
+    latex_str = latex_str.replace("\\begin{tabular}{lrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
 
     with open('plan_length_table.tex', 'w') as f:
         f.write(latex_str)
@@ -247,8 +260,7 @@ def generate_latex_table(df):
     caption = ("Average plan cost by each strategy for each domain. "
                 "The table lists the average plan cost by each strategy for each domain, "
                 "as well as the total average plan cost by each strategy.")
-    latex_str = df.to_latex(index=False, column_format='lrrrrrrrrrrrr', escape=False,
-                            columns=['domain', 'avg_plan_cost_baseline', 'avg_plan_cost_default', 'avg_plan_cost_fullrand', 'avg_plan_cost_weighted'],
+    latex_str = df[['domain', 'avg_plan_cost_baseline', 'avg_plan_cost_default', 'avg_plan_cost_fullrand', 'avg_plan_cost_weighted']].to_latex(index=False, column_format='lrrrr', escape=False,
                             header=['Domain', 'Baseline', 'Default', 'Random', 'W-Random'],
                             caption=caption, label='tab:plan_cost_table')
     
@@ -260,7 +272,7 @@ def generate_latex_table(df):
     
     # Adding multicolumn labels for strategies
     strategy_labels = "\\hline\n\\multicolumn{1}{|c|}{} & \\multicolumn{4}{|c|}{Plan Cost}\\\\ \\cline{2-5}\n"
-    latex_str = latex_str.replace("\\begin{tabular}{lrrrrrrrrrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
+    latex_str = latex_str.replace("\\begin{tabular}{lrrrr}", "\\begin{tabular}{|l|rrrr|}\n" + strategy_labels)
 
     with open('plan_cost_table.tex', 'w') as f:
         f.write(latex_str)
