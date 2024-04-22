@@ -3,7 +3,7 @@ import pandas as pd
 
 # %%
 df_baseline = pd.read_csv('planner_outputs_baseline.csv')
-df_default = pd.read_csv('planner_outputs_first/default/planner_outputs_default.csv')
+df_default = pd.read_csv('planner_outputs_default.csv')
 df_fullrand = pd.read_csv('planner_outputs_random.csv')
 df_weighted = pd.read_csv('planner_outputs_stateinfo.csv')
 
