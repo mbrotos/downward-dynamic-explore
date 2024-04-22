@@ -107,9 +107,15 @@ def highlight_best_performance(row, metrics):
         )
         for strategy in ["default", "fullrand", "weighted", "baseline"]:
             if row[f"{metric}_{strategy}"] == best_value:
-                row[f"{metric}_{strategy}"] = f"\\textbf{{{best_value:.2f}}}"
+                if metric == "total_solved":
+                    row[f"{metric}_{strategy}"] = f"\\textbf{{{int(best_value)}}}"
+                else:
+                    row[f"{metric}_{strategy}"] = f"\\textbf{{{best_value:.2f}}}"
             else:
-                row[f"{metric}_{strategy}"] = f'{row[f"{metric}_{strategy}"]:.2f}'
+                if metric == "total_solved":
+                    row[f"{metric}_{strategy}"] = f'{int(row[f"{metric}_{strategy}"])}'
+                else:
+                    row[f"{metric}_{strategy}"] = f'{row[f"{metric}_{strategy}"]:.2f}'
     return row
 
 
