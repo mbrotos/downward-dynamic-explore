@@ -285,7 +285,7 @@ latex_table = generate_latex_table(highlighted_df)
 #     f.write(latex_table)
 
 
-# %%
+# Run the script with the following command:
 
-
+# python generate_latex_table.py
 

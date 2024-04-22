@@ -87,3 +87,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Run the script with the following commands:
+
+"""
+python parse_plan_log.py --log_dir planner_outputs_baseline --output_path ./planner_outputs_baseline.csv --planner baseline
+python parse_plan_log.py --log_dir planner_outputs_default --output_path ./planner_outputs_default.csv --planner default
+python parse_plan_log.py --log_dir planner_outputs_random --output_path ./planner_outputs_random.csv --planner random
+python parse_plan_log.py --log_dir planner_outputs_stateinfo --output_path ./planner_outputs_stateinfo.csv --planner stateinfo
+"""
