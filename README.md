@@ -1,3 +1,10 @@
+# Abstract
+Several recent heuristic search algorithms have focused on methods which systematically disregard the heuristic function. While these popular search algorithms report increases in performance without a significant increase in computational cost, they all use rudimentary techniques to determine when to disregard heuristics. We create a framework on top of Type-GBFS in the Fast Downward Planning System, allowing us to dynamically update the probability of ignoring the heuristic. We test our proposed dynamic exploration control using cached values to evaluate the potential of our method. While we do not see significant benefits over traditional Type-GBFS within our experiments, our tests only focus on a limited scope. We note that dynamic exploration control has a high theoretical potential. We provide a framework for others to test with.
+
+#### See the full report here: [Dynamic_Exploration_Heuristic_Search_AAAI_Project.pdf](Dynamic_Exploration_Heuristic_Search_AAAI_Project.pdf)
+
+---
+
 ### A fork of Fast Downward expanding on the alternation list and examining the impact of exploration in Type-GBFS and Type-WA*
 New features:
 - Custom alternation list decision functions
@@ -10,6 +17,7 @@ New features:
   - Number of nodes expanded and generated
   - Number of dead ends
   - etc.
+
 
 
 ---
