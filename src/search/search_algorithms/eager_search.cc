@@ -32,6 +32,11 @@ EagerSearch::EagerSearch(const plugins::Options &opts)
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
+
+    last_g = -1;
+    last_f = -1;
+
+    alt_updatable = false;
 }
 
 void EagerSearch::initialize() {
@@ -114,12 +119,23 @@ SearchStatus EagerSearch::step() {
             log << "Completely explored state space -- no solution!" << endl;
             return FAILED;
         }
-        StateID id = open_list->remove_min();
+
+        double remove_min_f = -1, remove_min_g = -1;
+
+        if(alt_updatable) {
+            alt_updatable = false;
+            remove_min_f = last_f;
+            remove_min_g = last_g;
+        }
+
+        StateRegistry *r = &state_registry;
+        StateID id = open_list->remove_min(r, remove_min_f, remove_min_g);
         State s = state_registry.lookup_state(id);
         node.emplace(search_space.get_node(s));
 
-        if (node->is_closed())
+        if (node->is_closed()) {
             continue;
+        }
 
         /*
           We can pass calculate_preferred=false here since preferred
@@ -142,8 +158,9 @@ SearchStatus EagerSearch::step() {
               information in the meantime. Then upon second expansion we have a dead-end
               node which we must ignore.
             */
-            if (node->is_dead_end())
+            if (node->is_dead_end()) {
                 continue;
+            }
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
@@ -160,6 +177,8 @@ SearchStatus EagerSearch::step() {
             }
         }
 
+        alt_updatable = true;
+        last_g = node->get_g();
         node->close();
         assert(!node->is_dead_end());
         update_f_value_statistics(eval_context);
@@ -301,8 +320,11 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 /* TODO: HACK! This is very inefficient for simply looking up an h value.
    Also, if h values are not saved it would recompute h for each and every state. */
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
+    // cout << "attempting to update" << "\n";
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
+        last_f = f_value;
+        // cout << "updating f: " << f_value << "\n";
         statistics.report_f_value_progress(f_value);
     }
 }

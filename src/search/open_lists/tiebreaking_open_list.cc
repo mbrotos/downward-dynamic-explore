@@ -40,7 +40,7 @@ public:
     explicit TieBreakingOpenList(const plugins::Options &opts);
     virtual ~TieBreakingOpenList() override = default;
 
-    virtual Entry remove_min() override;
+    virtual Entry remove_min(StateRegistry* registry = nullptr, double last_f=-1, double last_g=-1) override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
@@ -71,7 +71,7 @@ void TieBreakingOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-Entry TieBreakingOpenList<Entry>::remove_min() {
+Entry TieBreakingOpenList<Entry>::remove_min(StateRegistry* registry, double last_f, double last_g) {
     assert(size > 0);
     typename map<const vector<int>, Bucket>::iterator it;
     it = buckets.begin();

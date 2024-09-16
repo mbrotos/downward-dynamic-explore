@@ -50,7 +50,7 @@ public:
     /*
       Remove and return the entry that should be expanded next.
     */
-    virtual Entry remove_min() = 0;
+    virtual Entry remove_min(StateRegistry* registry = nullptr, double last_f=-1, double last_g=-1) = 0;
 
     // Return true if the open list is empty.
     virtual bool empty() const = 0;
